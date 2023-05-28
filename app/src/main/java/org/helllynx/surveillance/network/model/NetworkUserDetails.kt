@@ -73,8 +73,8 @@ data class NetworkUserDetails(
     val url: String? = null
 )
 
-fun NetworkUserDetails.asDatabaseModel(): org.helllynx.surveillance.database.DatabaseUserDetails {
-    return org.helllynx.surveillance.database.DatabaseUserDetails(
+fun NetworkUserDetails.asDatabaseModel(): DatabaseUserDetails {
+    return DatabaseUserDetails(
         user = login,
         avatar = avatarUrl,
         name = name ?: "",

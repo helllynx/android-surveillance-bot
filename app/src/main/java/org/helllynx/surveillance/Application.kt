@@ -2,7 +2,7 @@ package org.helllynx.surveillance
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
-//import org.helllynx.surveillance.BuildConfig
+import org.helllynx.surveillance.BuildConfig
 import timber.log.Timber
 
 
@@ -11,9 +11,9 @@ class Application : Application() {
 
     override fun onCreate() {
         super.onCreate()
-//        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
-//        }
+        }
     }
 
 }

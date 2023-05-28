@@ -14,7 +14,7 @@ data class DatabaseUserDetails constructor(
     val location: String
 )
 
-fun org.helllynx.surveillance.database.DatabaseUserDetails.asDomainModel(): UserDetails {
+fun DatabaseUserDetails.asDomainModel(): UserDetails {
     return UserDetails(
         user = user,
         avatar = avatar,

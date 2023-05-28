@@ -15,13 +15,13 @@ interface UsersDao {
 
     // single user
     @Query("select * from DatabaseUserDetails WHERE user LIKE :user")
-    fun getUserDetails(user: String): LiveData<org.helllynx.surveillance.database.DatabaseUserDetails>
+    fun getUserDetails(user: String): LiveData<DatabaseUserDetails>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertUserDetails(databaseUserDetails: org.helllynx.surveillance.database.DatabaseUserDetails)
+    fun insertUserDetails(databaseUserDetails: DatabaseUserDetails)
 }
 
-@Database(entities = [DatabaseUserListItem::class, org.helllynx.surveillance.database.DatabaseUserDetails::class], version = 1, exportSchema = false)
+@Database(entities = [DatabaseUserListItem::class, DatabaseUserDetails::class], version = 1, exportSchema = false)
 abstract class UsersDatabase : RoomDatabase() {
     abstract val usersDao: UsersDao
 }
