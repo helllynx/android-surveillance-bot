@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
-    app:startDestination="@id/users_list">
+    app:startDestination="@id/camera">
 
     <fragment
         android:id="@+id/users_list"
@@ -25,6 +25,13 @@
         <argument
             android:name="user"
             app:argType="string" />
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/camera"
+        android:name="org.helllynx.surveillance.views.camera.CameraFragment"
+        tools:layout="@layout/fragment_camera">
     </fragment>
 
 </navigation>

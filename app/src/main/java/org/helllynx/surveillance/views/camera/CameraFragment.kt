@@ -1,19 +1,25 @@
 package org.helllynx.surveillance.views.camera
 
+import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.SurfaceTexture
 import android.hardware.Camera
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CameraManager
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.view.TextureView.SurfaceTextureListener
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.navArgs
+import dagger.hilt.android.AndroidEntryPoint
 import org.helllynx.surveillance.R
 import org.helllynx.surveillance.databinding.FragmentCameraBinding
-import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class CameraFragment : Fragment() {
@@ -30,7 +36,7 @@ class CameraFragment : Fragment() {
     ): View {
 
         _binding = DataBindingUtil.inflate(
-            inflater, R.layout.fragment_user_details, container, false
+            inflater, R.layout.fragment_camera, container, false
         )
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -72,6 +78,94 @@ class CameraFragment : Fragment() {
         } catch (e: Exception) {
             // Camera is not available (in use or does not exist)
             null // returns null if camera is unavailable
+        }
+    }
+
+    private var mTextureView: TextureView? = null
+    private var mCameraDevice: CameraDevice? = null
+
+    private val mSurfaceTextureListener: SurfaceTextureListener = object : SurfaceTextureListener {
+        override fun onSurfaceTextureAvailable(
+            surfaceTexture: SurfaceTexture,
+            width: Int, height: Int
+        ) {
+            openCamera( requireContext(), width, height)
+        }
+
+        override fun onSurfaceTextureSizeChanged(
+            surfaceTexture: SurfaceTexture,
+            width: Int, height: Int
+        ) {
+        }
+
+        override fun onSurfaceTextureDestroyed(surfaceTexture: SurfaceTexture): Boolean {
+            return false
+        }
+
+        override fun onSurfaceTextureUpdated(surfaceTexture: SurfaceTexture) {
+            // Detect motion here
+        }
+    }
+
+    private fun openCamera(context: Context, width: Int, height: Int) {
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager?
+        try {
+            val cameraId = cameraManager!!.cameraIdList[0]
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return
+            }
+            cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
+                override fun onOpened(cameraDevice: CameraDevice) {
+                    mCameraDevice = cameraDevice
+                    val surfaceTexture = mTextureView!!.surfaceTexture
+                    surfaceTexture!!.setDefaultBufferSize(width, height)
+                    val surface = Surface(surfaceTexture)
+                    try {
+                        val builder =
+                            mCameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+                        builder.addTarget(surface)
+                        mCameraDevice!!.createCaptureSession(
+                            listOf(surface),
+                            object : CameraCaptureSession.StateCallback() {
+                                override fun onConfigured(
+                                    cameraCaptureSession: CameraCaptureSession
+                                ) {
+                                    try {
+                                        cameraCaptureSession.setRepeatingRequest(
+                                            builder.build(), null, null
+                                        )
+                                    } catch (e: CameraAccessException) {
+                                        e.printStackTrace()
+                                    }
+                                }
+
+                                override fun onConfigureFailed(
+                                    cameraCaptureSession: CameraCaptureSession
+                                ) {
+                                }
+                            }, null
+                        )
+                    } catch (e: CameraAccessException) {
+                        e.printStackTrace()
+                    }
+                }
+
+                override fun onDisconnected(cameraDevice: CameraDevice) {}
+                override fun onError(cameraDevice: CameraDevice, i: Int) {}
+            }, null)
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
         }
     }
 
